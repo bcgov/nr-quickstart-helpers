@@ -9,3 +9,5 @@
 
 # DevOps-QuickStart-Helpers
 Helper functions and potential future Actions supporting the DevOps-QuickStart.
+
+Please see [DevOps-QuickStart](https://github.com/bcgov/DevOps-QuickStart-Helpers) to get started with OpenShift.
