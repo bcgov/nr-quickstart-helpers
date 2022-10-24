@@ -108,6 +108,6 @@ jobs:
         with:
           context: ./${{ inputs.component }}/
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ inputs.img_build }}-${{ inputs.component }}
+          tags: ghcr.io/${{ github.repository }}/${{ inputs.component }}:${{ inputs.img_build }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
