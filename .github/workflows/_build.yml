@@ -6,20 +6,20 @@ on:
       component:
         type: string
         required: true
-        description: Component (backend, frontend)
+        description: Component, e.g. backend, frontend
       img_build:
         type: string
         required: true
-        description: Default zone (pr#, test, demo, prod)
+        description: Default zone, usually pr#
       img_fallback:
         type: string
         required: true
-        description: Where to pull default images from (prod, pr#, test)
+        description: Where to pull default images from, e.g. prod, test
       repository:
         type: string
-        default: ${{ github.repository }}
         required: false
-        description: Optionally, specify a different repo to clone
+        default: ${{ github.repository }}
+        description: Optional, specify a repo to clone
       triggers:
         type: string
         required: true
@@ -52,6 +52,8 @@ jobs:
       - name: Check and process modified files
         id: check
         run: |
+          set -x
+
           # Fetch default branch to diff against
           git fetch origin ${{ env.default_branch }}:refs/remotes/origin/master
 
@@ -71,8 +73,8 @@ jobs:
           done < <(git diff origin/${{ env.default_branch }} --name-only)
 
           # Check that fallback tag exists, otherwise build
-          TOKEN=$(curl -s https://ghcr.io/token\?scope\="repository:${{ github.repository }}:pull" | jq -r .token)
-          URL="https://ghcr.io/v2/${{ github.repository }}/manifests/${{ inputs.img_fallback }}-${{ inputs.component }}"
+          TOKEN=$(curl -s https://ghcr.io/token\?scope\="repository:${{ github.repository }}/${{ inputs.component }}:pull" | jq -r .token)
+          URL="https://ghcr.io/v2/${{ github.repository }}/${{ inputs.component }}/manifests/${{ inputs.img_fallback }}"
           if [ $(curl -ILso /dev/null -w "%{http_code}" -H "Authorization: Bearer ${TOKEN}" "${URL}") -ne 200 ]
           then
               # Output build=true for next steps
@@ -92,9 +94,8 @@ jobs:
         with:
           registry: ghcr.io
           repository: ${{ github.repository }}
-          target: ${{ inputs.img_fallback }}-${{ inputs.component }}
-          tags: |
-            ${{ inputs.img_build }}-${{ inputs.component }}
+          target: ${{ inputs.component}}:${{ inputs.img_fallback }}
+          tags: ${{ inputs.img_build }}
 
       # If a build is required, then create a new image
       - name: Set up Docker Buildx
