@@ -25,7 +25,7 @@ jobs:
       component: ${{ matrix.component }}
       img_build: ${{ github.event.number }}
       img_fallback: test
-      # repository: bcgov/nr-quickstart-typescript
+      repository: bcgov/nr-quickstart-typescript
       triggers: ${{ matrix.triggers }}
 
   # tests:
