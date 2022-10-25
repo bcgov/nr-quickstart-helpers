@@ -10,7 +10,7 @@ concurrency:
 jobs:
   builds:
     name: Builds
-    uses: ./workflows/_build.yml
+    uses: ./.github/workflows/_build.yml
     strategy:
       matrix:
         component: [backend, frontend]
