@@ -1,7 +1,8 @@
 name: Pull Request
 
 on:
-  pull_request:
+  # pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -125,7 +126,7 @@ jobs:
       - deploys
     env:
       DOMAIN: apps.silver.devops.gov.bc.ca
-      NAME: nr-quickstart-typescript
+      NAME: nr-quickstart-helpers
     runs-on: ubuntu-22.04
     steps:
       - name: Comment with links
@@ -137,3 +138,4 @@ jobs:
           message: |
             DEV deployments have completed successfully!
             [Backend](https://${{ env.NAME }}-${{ github.event.number }}-backend.${{ env.DOMAIN }}/) available
+            [Frontend](https://${{ env.NAME }}-${{ github.event.number }}-frontend.${{ env.DOMAIN }}/) available

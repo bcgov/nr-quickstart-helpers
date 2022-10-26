@@ -8,9 +8,6 @@ on:
       - ".github/ISSUE_TEMPLATE/*"
       - "**.md"
 
-env:
-  name: nr-quickstart-typescript
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -28,18 +25,17 @@ jobs:
           oc project ${{ secrets.OC_NAMESPACE }}
 
           # Remove old build runs, build pods and deployment pods
-          oc delete all,pvc,secret -l app=${{ env.name }}-${{ github.event.number }}
+          oc delete all,pvc,secret -l app=${{ github.event.repository.name }}-${{ github.event.number }}
 
   # If merged into main, then handle any image promotions
   image-promotions:
     name: Image Promotions
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    # if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     uses: ./.github/workflows/_image_promote.yml
     strategy:
       matrix:
         component: [backend, frontend]
     with:
-      app_name: nr-quickstart-typescript
       component: ${{ matrix.component }}
       env_source: ${{ github.event.number }}
       env_target: test
@@ -52,7 +48,7 @@ jobs:
   merge-notification:
     name: Merge Notification
     runs-on: ubuntu-22.04
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    # if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     steps:
       - name: Pre-merge update
         uses: mshick/add-pr-comment@v1

@@ -5,8 +5,9 @@ on:
     inputs:
       app_name:
         type: string
-        required: true
-        description: App base name, without component
+        required: false
+        default: ${{ github.event.repository.name }}
+        description: App base name, generally just the repository
       component:
         type: string
         required: true
