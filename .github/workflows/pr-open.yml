@@ -30,7 +30,7 @@ jobs:
 
   tests:
     name: Unit Tests
-    uses: ./.github//workflows/_code-cov.yml
+    uses: ./.github/workflows/_code-cov.yml
     strategy:
       matrix:
         component: [backend, frontend]
