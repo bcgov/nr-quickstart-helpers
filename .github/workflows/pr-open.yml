@@ -16,9 +16,9 @@ jobs:
         component: [backend, frontend]
         include:
           - component: backend
-            triggers: ('backend/')
+            triggers: ('.')
           - component: frontend
-            triggers: ('frontend/')
+            triggers: ('.')
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
     with:
