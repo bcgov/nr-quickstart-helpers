@@ -45,8 +45,8 @@ jobs:
           set -eux
 
           # Vars
-          IMG_PREV="${{ env.registry }}/${{ github.repository }}:${{ inputs.env_source }}-${{ inputs.component }}"
-          IMG_ZONE="${{ env.registry }}/${{ github.repository }}:${{ inputs.env_target }}-${{ inputs.component }}"
+          IMG_PREV="${{ env.registry }}/${{ github.repository }}/${{ inputs.component }}:${{ inputs.env_source }}"
+          IMG_ZONE="${{ env.registry }}/${{ github.repository }}/${{ inputs.component }}:${{ inputs.env_target }}"
 
           # Make sure an image exists to promote; grab SHA
           if [[ ! $(docker pull "${IMG_PREV}") ]]; then
@@ -86,6 +86,5 @@ jobs:
         with:
           registry: ${{ env.registry }}
           repository: ${{ github.repository }}
-          target: ${{ inputs.env_source }}-${{ inputs.component }}
-          tags: |
-            ${{ inputs.env_target }}-${{ inputs.component }}
+          target: ${{ inputs.component }}:${{ inputs.env_source }}
+          tags: ${{ inputs.component }}/${{ inputs.env_target }}
