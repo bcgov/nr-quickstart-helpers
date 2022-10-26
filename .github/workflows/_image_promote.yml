@@ -86,6 +86,6 @@ jobs:
         uses: shrink/actions-docker-registry-tag@v3
         with:
           registry: ${{ env.registry }}
-          repository: ${{ github.repository }}
-          target: ${{ inputs.component }}:${{ inputs.env_source }}
-          tags: ${{ inputs.component }}/${{ inputs.env_target }}
+          repository: ${{ github.repository }}/${{ inputs.component }}
+          target: ${{ inputs.env_source }}
+          tags: ${{ inputs.env_target }}

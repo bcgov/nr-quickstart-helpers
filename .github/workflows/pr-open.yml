@@ -1,8 +1,7 @@
 name: Pull Request
 
 on:
-  # pull_request:
-  workflow_dispatch:
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -100,15 +99,15 @@ jobs:
           - component: database
             overwrite: false
             template_file: .github/openshift/deploy.database.yml
-            template_vars: -p ZONE=${{ github.event.number }}
+            template_vars: -p ZONE=${{ github.event.number }} -p NAME=${{ github.event.repository.name }}
           - component: backend
             overwrite: true
             template_file: .github/openshift/deploy.backend.yml
-            template_vars: -p ZONE=${{ github.event.number }} -p PROMOTE=${{ github.repository }}/backend:${{ github.event.number }}
+            template_vars: -p ZONE=${{ github.event.number }} -p PROMOTE=${{ github.repository }}/backend:${{ github.event.number }} -p NAME=${{ github.event.repository.name }}
           - component: frontend
             overwrite: true
             template_file: .github/openshift/deploy.frontend.yml
-            template_vars: -p ZONE=${{ github.event.number }} -p PROMOTE=${{ github.repository }}/frontend:${{ github.event.number }}
+            template_vars: -p ZONE=${{ github.event.number }} -p PROMOTE=${{ github.repository }}/frontend:${{ github.event.number }} -p NAME=${{ github.event.repository.name }}
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_server: ${{ secrets.OC_SERVER }}
