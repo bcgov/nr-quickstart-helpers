@@ -5,8 +5,9 @@ on:
     inputs:
       app_name:
         type: string
-        required: true
-        description: App base name, without component
+        required: false
+        default: ${{ github.event.repository.name }}
+        description: App base name, generally just the repository
       component:
         type: string
         required: true
@@ -45,8 +46,8 @@ jobs:
           set -eux
 
           # Vars
-          IMG_PREV="${{ env.registry }}/${{ github.repository }}:${{ inputs.env_source }}-${{ inputs.component }}"
-          IMG_ZONE="${{ env.registry }}/${{ github.repository }}:${{ inputs.env_target }}-${{ inputs.component }}"
+          IMG_PREV="${{ env.registry }}/${{ github.repository }}/${{ inputs.component }}:${{ inputs.env_source }}"
+          IMG_ZONE="${{ env.registry }}/${{ github.repository }}/${{ inputs.component }}:${{ inputs.env_target }}"
 
           # Make sure an image exists to promote; grab SHA
           if [[ ! $(docker pull "${IMG_PREV}") ]]; then
@@ -85,7 +86,6 @@ jobs:
         uses: shrink/actions-docker-registry-tag@v3
         with:
           registry: ${{ env.registry }}
-          repository: ${{ github.repository }}
-          target: ${{ inputs.env_source }}-${{ inputs.component }}
-          tags: |
-            ${{ inputs.env_target }}-${{ inputs.component }}
+          repository: ${{ github.repository }}/${{ inputs.component }}
+          target: ${{ inputs.env_source }}
+          tags: ${{ inputs.env_target }}
