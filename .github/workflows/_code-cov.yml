@@ -11,6 +11,11 @@ on:
         type: string
         required: true
         description: Relative path to lcov.info
+      repository:
+        type: string
+        default: ${{ github.repository }}
+        required: false
+        description: Optionally, specify a different repo to clone
       test_cmd:
         type: string
         required: true
@@ -26,6 +31,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.repository }}
 
       - name: Get npm cache directory
         id: npm-cache-dir
