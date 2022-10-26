@@ -85,38 +85,39 @@ jobs:
   #           -Dsonar.sources=backend,frontend
   #           -Dsonar.tests=backend/test,frontend/test
 
-  # deploys:
-  #   name: Deploys
-  #   needs:
-  #     - builds
-  #   # If any of the prerequs created a build, then deploy
-  #   if: contains(needs.*.outputs.build, 'true')
-  #   uses: bcgov/nr-quickstart-helpers/.github/workflows/_deploy.yml@main
-  #   strategy:
-  #     matrix:
-  #       component: [backend, database, frontend]
-  #       include:
-  #         - component: database
-  #           overwrite: false
-  #           template_file: .github/openshift/deploy.database.yml
-  #           template_vars: -p ZONE=${{ github.event.number }}
-  #         - component: backend
-  #           overwrite: true
-  #           template_file: .github/openshift/deploy.backend.yml
-  #           template_vars: -p ZONE=${{ github.event.number }} -p PROMOTE=${{ github.repository }}:${{ github.event.number }}-backend
-  #         - component: frontend
-  #           overwrite: true
-  #           template_file: .github/openshift/deploy.frontend.yml
-  #           template_vars: -p ZONE=${{ github.event.number }} -p PROMOTE=${{ github.repository }}:${{ github.event.number }}-frontend
-  #   secrets:
-  #     oc_namespace: ${{ secrets.OC_NAMESPACE }}
-  #     oc_server: ${{ secrets.OC_SERVER }}
-  #     oc_token: ${{ secrets.OC_TOKEN }}
-  #   with:
-  #     component: ${{ matrix.component }}
-  #     overwrite: ${{ matrix.overwrite }}
-  #     template_file: ${{ matrix.template_file }}
-  #     template_vars: ${{ matrix.template_vars }}
+  deploys:
+    name: Deploys
+    needs:
+      - builds
+    # If any of the prerequs created a build, then deploy
+    if: contains(needs.*.outputs.build, 'true')
+    uses: ./.github/workflows/_deploy.yml
+    strategy:
+      matrix:
+        component: [backend, database, frontend]
+        include:
+          - component: database
+            overwrite: false
+            template_file: .github/openshift/deploy.database.yml
+            template_vars: -p ZONE=${{ github.event.number }}
+          - component: backend
+            overwrite: true
+            template_file: .github/openshift/deploy.backend.yml
+            template_vars: -p ZONE=${{ github.event.number }} -p PROMOTE=${{ github.repository }}:${{ github.event.number }}-backend
+          - component: frontend
+            overwrite: true
+            template_file: .github/openshift/deploy.frontend.yml
+            template_vars: -p ZONE=${{ github.event.number }} -p PROMOTE=${{ github.repository }}:${{ github.event.number }}-frontend
+    secrets:
+      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+      oc_server: ${{ secrets.OC_SERVER }}
+      oc_token: ${{ secrets.OC_TOKEN }}
+    with:
+      component: ${{ matrix.component }}
+      overwrite: ${{ matrix.overwrite }}
+      repository: bcgov/nr-quickstart-typescript
+      template_file: ${{ matrix.template_file }}
+      template_vars: ${{ matrix.template_vars }}
 
   # post-deploy:
   #   name: Post-deploy
