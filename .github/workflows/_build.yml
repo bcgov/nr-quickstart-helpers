@@ -15,6 +15,11 @@ on:
         type: string
         required: true
         description: Where to pull default images from (prod, pr#, test)
+      repository:
+        type: string
+        default: ${{ github.repository }}
+        required: false
+        description: Optionally, specify a different repo to clone
       triggers:
         type: string
         required: true
@@ -39,6 +44,8 @@ jobs:
       build: ${{ steps.check.outputs.build }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.repository }}
 
       # Check triggers to see if a build is required
       # Returns jobs.check.outputs.build as a boolean (true/false)
