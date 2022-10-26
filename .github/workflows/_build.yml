@@ -93,8 +93,8 @@ jobs:
         if: steps.check.outputs.build != 'true'
         with:
           registry: ghcr.io
-          repository: ${{ github.repository }}
-          target: ${{ inputs.component}}:${{ inputs.img_fallback }}
+          repository: ${{ github.repository }}/${{ inputs.component }}
+          target: ${{ inputs.img_fallback }}
           tags: ${{ inputs.img_build }}
 
       # If a build is required, then create a new image
