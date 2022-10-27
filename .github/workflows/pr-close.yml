@@ -30,25 +30,24 @@ jobs:
   # If merged into main, then handle any image promotions
   image-promotions:
     name: Image Promotions
-    # if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
-    uses: ./.github/workflows/_image_promote.yml
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         component: [backend, frontend]
-    with:
-      component: ${{ matrix.component }}
-      env_source: ${{ github.event.number }}
-      env_target: test
-    secrets:
-      oc_namespace: ${{ secrets.OC_NAMESPACE }}
-      oc_server: ${{ secrets.OC_SERVER }}
-      oc_token: ${{ secrets.OC_TOKEN }}
+    steps:
+      - uses: shrink/actions-docker-registry-tag@v2
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.component }}
+          target: ${{ github.event.number }}
+          tags: test
 
   # Notify when PR merged into main
   merge-notification:
     name: Merge Notification
     runs-on: ubuntu-22.04
-    # if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     steps:
       - name: Pre-merge update
         uses: mshick/add-pr-comment@v1
