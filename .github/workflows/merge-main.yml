@@ -1,7 +1,6 @@
 name: Merge to Main
 
 on:
-  pull_request:
   push:
     branches:
       - main
@@ -19,65 +18,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # # https://github.com/marketplace/actions/ghcr-io-container-cleanup
-  # cleanup-ghcr:
-  #   name: Cleanup Container Registry
-  #   runs-on: ubuntu-22.04
-  #   strategy:
-  #     matrix:
-  #       component: [backend, frontend]
-  #   steps:
-  #     - name: Delete old packages
-  #       uses: davahome/ghcr-cleanup@v1
-  #       with:
-  #         delete_untagged: 1
-  #         keep_versions: 10
-  #         keep_versions_untagged: 0
-  #         minimum_days: 14
-  #         owner: orgs/bcgov
-  #         package: ${{ github.event.repository.name }}/${{ matrix.component }}
-  #         skip_tags: prod,test
-  #         token: ${{ secrets.PACKAGES_RWD_TOKEN }}
-
   deploy-test:
-    name: TEST Deployment
-    # needs:
-    # - cleanup-ghcr
-    runs-on: ubuntu-22.04
-    environment:
-      name: tes
-    env:
-      ZONE: test
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: bcgov/nr-quickstart-typescript
-
-      - name: Deploy
-        run: |
-          # Login to OpenShift and select project
-          oc login --token=${{ secrets.OC_TOKEN }} --server=${{ secrets.OC_SERVER }}
-          oc project ${{ secrets.OC_NAMESPACE }}
-
-          # Do not replace database; 'oc create' kicks up an error if objects already exist
-          oc process -f .github/openshift/deploy.database.yml -p ZONE=${{ env.ZONE }} -p NAME=${{ github.event.repository.name }} | oc create -f - || true
-
-          # Process and apply deployment templates
-          oc process -f .github/openshift/deploy.backend.yml -p ZONE=${{ env.ZONE }} -p NAME=${{ github.event.repository.name }} \
-            -p PROMOTE=${{ github.repository }}/backend:${{ env.ZONE }} | oc apply -f -
-          oc process -f .github/openshift/deploy.frontend.yml -p ZONE=${{ env.ZONE }} -p NAME=${{ github.event.repository.name }} \
-            -p PROMOTE=${{ github.repository }}/frontend:${{ env.ZONE }} | oc apply -f -
-
-          # Follow any active rollouts (see deploymentconfigs)
-          oc rollout status dc/${{ env.NAME }}-${{ env.ZONE }}-database -w
-          oc rollout status dc/${{ env.NAME }}-${{ env.ZONE }}-backend -w
-          oc rollout status dc/${{ env.NAME }}-${{ env.ZONE }}-frontend -w
-
-          # Remove completed build runs, build pods and deployment pods
-          for p in $(oc get po | grep "Completed" | awk '{print $1}')
-          do
-            oc delete po ${p}
-          done
+    name: TEST Deployments
+    uses: ./.github/workflows/_deploy.yml
+    strategy:
+      matrix:
+        component: [backend, database, frontend]
+        include:
+          - component: database
+            overwrite: false
+            template_file: .github/openshift/deploy.database.yml
+            template_vars: -p ZONE=test -p NAME=${{ github.event.repository.name }}
+          - component: backend
+            overwrite: true
+            template_file: .github/openshift/deploy.backend.yml
+            template_vars: -p ZONE=test -p PROMOTE=${{ github.repository }}/backend:test -p NAME=${{ github.event.repository.name }}
+          - component: frontend
+            overwrite: true
+            template_file: .github/openshift/deploy.frontend.yml
+            template_vars: -p ZONE=test -p PROMOTE=${{ github.repository }}/frontend:test -p NAME=${{ github.event.repository.name }}
+    secrets:
+      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+      oc_server: ${{ secrets.OC_SERVER }}
+      oc_token: ${{ secrets.OC_TOKEN }}
+    with:
+      component: ${{ matrix.component }}
+      environment: test
+      overwrite: ${{ matrix.overwrite }}
+      repository: bcgov/nr-quickstart-typescript
+      template_file: ${{ matrix.template_file }}
+      template_vars: ${{ matrix.template_vars }}
 
   zap-backend:
     name: Backend Pen Tests
@@ -108,51 +78,38 @@ jobs:
           fail_action: false
 
   deploy-prod:
-    name: PROD Deployment
+    name: PROD Deployments
     needs:
       - zap-backend
       - zap-frontend
-    runs-on: ubuntu-22.04
-    environment:
-      name: prod
-    env:
-      ZONE: prod
-      PREV: test
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: bcgov/nr-quickstart-typescript
-
-      - name: Deploy
-        run: |
-          # Login to OpenShift and select project
-          oc login --token=${{ secrets.OC_TOKEN }} --server=${{ secrets.OC_SERVER }}
-          oc project ${{ secrets.OC_NAMESPACE }}
-
-          # Clear stale images for import/replacement
-          if [ $(oc get is -l app=${{ env.NAME }}-${{ env.ZONE }} -o name | grep -v database | wc -l) -gt 0 ]; then
-            oc delete is -l app=${{ env.NAME }}-${{ env.ZONE }}
-          fi
-
-          # Do not replace database; 'oc create' kicks up an error if objects already exist
-          oc process -f .github/openshift/deploy.database.yml -p ZONE=${{ env.ZONE }} -p NAME=${{ github.event.repository.name }} | oc create -f - || true
-
-          # Process and apply deployment templates
-          oc process -f .github/openshift/deploy.backend.yml -p ZONE=${{ env.ZONE }} -p NAME=${{ github.event.repository.name }} \
-            -p PROMOTE=${{ github.repository }}/backend:${{ env.PREV }} | oc apply -f -
-          oc process -f .github/openshift/deploy.frontend.yml -p ZONE=${{ env.ZONE }} -p NAME=${{ github.event.repository.name }} \
-            -p PROMOTE=${{ github.repository }}/frontend:${{ env.PREV }} | oc apply -f -
-
-          # Follow any active rollouts (see deploymentconfigs)
-          oc rollout status dc/${{ env.NAME }}-${{ env.ZONE }}-database -w
-          oc rollout status dc/${{ env.NAME }}-${{ env.ZONE }}-backend -w
-          oc rollout status dc/${{ env.NAME }}-${{ env.ZONE }}-frontend -w
-
-          # Remove completed build runs, build pods and deployment pods
-          for p in $(oc get po | grep "Completed" | awk '{print $1}')
-          do
-            oc delete po ${p}
-          done
+    uses: ./.github/workflows/_deploy.yml
+    strategy:
+      matrix:
+        component: [backend, database, frontend]
+        include:
+          - component: database
+            overwrite: false
+            template_file: .github/openshift/deploy.database.yml
+            template_vars: -p ZONE=prod -p NAME=${{ github.event.repository.name }}
+          - component: backend
+            overwrite: true
+            template_file: .github/openshift/deploy.backend.yml
+            template_vars: -p ZONE=prod -p PROMOTE=${{ github.repository }}/backend:test -p NAME=${{ github.event.repository.name }}
+          - component: frontend
+            overwrite: true
+            template_file: .github/openshift/deploy.frontend.yml
+            template_vars: -p ZONE=prod -p PROMOTE=${{ github.repository }}/frontend:test -p NAME=${{ github.event.repository.name }}
+    secrets:
+      oc_namespace: ${{ secrets.OC_NAMESPACE }}
+      oc_server: ${{ secrets.OC_SERVER }}
+      oc_token: ${{ secrets.OC_TOKEN }}
+    with:
+      component: ${{ matrix.component }}
+      environment: prod
+      overwrite: ${{ matrix.overwrite }}
+      repository: bcgov/nr-quickstart-typescript
+      template_file: ${{ matrix.template_file }}
+      template_vars: ${{ matrix.template_vars }}
 
   image-promotions:
     name: Promote images to PROD
