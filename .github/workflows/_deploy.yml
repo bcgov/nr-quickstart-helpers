@@ -7,6 +7,11 @@ on:
         type: string
         required: true
         description: Component (e.g. backend, frontend), also used as path
+      environment:
+        type: string
+        required: false
+        default: ""
+        description: GitHub environment containing required secrets
       overwrite:
         type: string
         required: true
@@ -39,6 +44,7 @@ jobs:
   deploy:
     name: ${{ inputs.component }}
     runs-on: ubuntu-22.04
+    environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v3
         with:
