@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy-test:
+  deploys-test:
     name: TEST Deployments
     uses: ./.github/workflows/_deploy.yml
     strategy:
@@ -49,39 +49,27 @@ jobs:
       template_file: ${{ matrix.template_file }}
       template_vars: ${{ matrix.template_vars }}
 
-  zap-backend:
-    name: Backend Pen Tests
+  penetration-tests:
+    name: Pen Tests
     needs:
-      - deploy-test
+      - deploys-test
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        component: [backend, frontend]
     steps:
       - name: ZAP Scan
         uses: zaproxy/action-full-scan@v0.3.0
         with:
-          target: https://${{ env.NAME }}-test-backend.apps.silver.devops.gov.bc.ca/
+          target: https://${{ env.NAME }}-test-${{ matrix.component }}.apps.silver.devops.gov.bc.ca/
           cmd_options: "-a"
           allow_issue_writing: false
           fail_action: false
 
-  zap-frontend:
-    name: Frontend Pen Tests
-    needs:
-      - deploy-test
-    runs-on: ubuntu-22.04
-    steps:
-      - name: ZAP Scan
-        uses: zaproxy/action-full-scan@v0.4.0
-        with:
-          target: https://${{ env.NAME }}-test-frontend.apps.silver.devops.gov.bc.ca/
-          cmd_options: "-a"
-          allow_issue_writing: false
-          fail_action: false
-
-  deploy-prod:
+  deploys-prod:
     name: PROD Deployments
     needs:
-      - zap-backend
-      - zap-frontend
+      - penetration-tests
     uses: ./.github/workflows/_deploy.yml
     strategy:
       matrix:
@@ -114,7 +102,7 @@ jobs:
   image-promotions:
     name: Promote images to PROD
     needs:
-      - deploy-prod
+      - deploys-prod
     runs-on: ubuntu-22.04
     strategy:
       matrix:
