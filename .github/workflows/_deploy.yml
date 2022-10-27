@@ -93,3 +93,4 @@ jobs:
               exit 1
           fi
           echo -e "Deployment successful!"
+          [ -z "${URL}"] || echo "URL: ${URL}"
