@@ -67,6 +67,7 @@ jobs:
       component: ${{ matrix.component }}
       overwrite: ${{ matrix.overwrite }}
       repository: bcgov/nr-quickstart-typescript
+      penetration_test: false
       template_file: ${{ matrix.template_file }}
       template_vars: ${{ matrix.template_vars }}
 
