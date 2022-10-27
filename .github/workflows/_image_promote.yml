@@ -68,7 +68,7 @@ jobs:
 
           # If different, then trigger updates
           if [[ "${SHA_PREV}" != "${SHA_ZONE}" ]]; then
-            echo "::set-output name=build::true"
+            echo "build=true" >> $GITHUB_OUTPUT
             echo "Image has changed"
 
             # Login to OpenShift and select project
