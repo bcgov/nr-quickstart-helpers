@@ -16,6 +16,21 @@ on:
         type: string
         required: true
         description: Replace existing objects/artifacts?
+      penetration_test:
+        type: string
+        required: false
+        default: false
+        description: Run a ZAProxy penetration test against any routes? [true/false]
+      penetration_test_fail:
+        type: string
+        required: false
+        default: false
+        description: Allow ZAProxy alerts to fail the workflow? [true/false]
+      penetration_test_issues:
+        type: string
+        required: false
+        default: false
+        description: Allow ZAProxy alerts to generate GitHub issues? [true/false]
       repository:
         type: string
         default: ${{ github.repository }}
@@ -28,7 +43,7 @@ on:
       template_vars:
         type: string
         required: true
-        description: Variables to pass (e.g. -p ZONE=...)
+        description: Template variables to pass (e.g. -p ZONE=...)
     secrets:
       oc_namespace:
         required: true
@@ -77,7 +92,8 @@ jobs:
           # Follow any active rollouts (see deploymentconfigs)
           oc rollout status dc/${DC} -w
 
-      - name: Deployment Verification
+      - name: Find Routes
+        id: get-route
         run: |
           # Pick out a url (host+path), if in template
           URL=$( \
@@ -85,8 +101,20 @@ jobs:
               | jq -r '.items[] | select(.kind=="Route") | .spec | .host + "/" +.path' \
           )
 
-          # If URL exists and is usable (e.g. at least a hostname), then test it
-          if [ ! -z "${URL%/*}" ] && [ $(curl -ILso /dev/null -w "%{http_code}" "${URL}") -ne 200 ]
+          # If URL exists and is usable (e.g. at least a hostname), then save it
+          if [ ! -z "${URL%/*}" ]; then
+            echo "route=${URL}" >> $GITHUB_OUTPUT
+            echo "Route: ${{ steps.get-route.outputs.route }}"
+            exit 0
+          fi
+          echo "No routes found"
+
+      - name: Basic Deployment Verification
+        if: steps.get-route.outputs.route &&( inputs.penetration_test != 'true' )
+        run: |
+          # Curl URL and verify http code 200
+          URL="${{ steps.get-route.outputs.route }}"
+          if [ $(curl -ILso /dev/null -w "%{http_code}" "${URL}") -ne 200 ]
           then
               HTTP_CODE=$(curl -ILso /dev/null -w "%{http_code}" "${URL}")
               echo -e "Failure!  \n\tStatus = ${HTTP_CODE}  \n\tURL: ${URL}\n"
@@ -94,3 +122,12 @@ jobs:
           fi
           echo -e "Deployment successful!"
           [ -z "${URL}"] || echo "URL: ${URL}"
+
+      - name: Penetration Test
+        if: steps.get-route.outputs.route &&( inputs.penetration_test == 'true' )
+        uses: zaproxy/action-full-scan@v0.3.0
+        with:
+          target: https://${{ steps.get-route.outputs.route }}
+          cmd_options: "-a"
+          allow_issue_writing: ${{ inputs.penetration_test_issues }}
+          fail_action: ${{ inputs.penetration_test_fail }}

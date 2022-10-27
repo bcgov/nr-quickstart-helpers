@@ -45,31 +45,15 @@ jobs:
       component: ${{ matrix.component }}
       environment: test
       overwrite: ${{ matrix.overwrite }}
+      penetration_test: true
       repository: bcgov/nr-quickstart-typescript
       template_file: ${{ matrix.template_file }}
       template_vars: ${{ matrix.template_vars }}
 
-  penetration-tests:
-    name: Pen Tests
-    needs:
-      - deploys-test
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        component: [backend, frontend]
-    steps:
-      - name: ZAP Scan
-        uses: zaproxy/action-full-scan@v0.3.0
-        with:
-          target: https://${{ env.NAME }}-test-${{ matrix.component }}.apps.silver.devops.gov.bc.ca/
-          cmd_options: "-a"
-          allow_issue_writing: false
-          fail_action: false
-
   deploys-prod:
     name: PROD Deployments
     needs:
-      - penetration-tests
+      - deploys-test
     uses: ./.github/workflows/_deploy.yml
     strategy:
       matrix:
@@ -95,6 +79,7 @@ jobs:
       component: ${{ matrix.component }}
       environment: prod
       overwrite: ${{ matrix.overwrite }}
+      penetration_test: true
       repository: bcgov/nr-quickstart-typescript
       template_file: ${{ matrix.template_file }}
       template_vars: ${{ matrix.template_vars }}
