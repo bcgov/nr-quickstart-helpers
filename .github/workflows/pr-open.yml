@@ -69,8 +69,8 @@ jobs:
       template_file: ${{ matrix.template_file }}
       template_vars: ${{ matrix.template_vars }}
 
-  post-deploy:
-    name: Post-deploy
+  completion:
+    name: PR Completion
     needs:
       - deploys
     env:
