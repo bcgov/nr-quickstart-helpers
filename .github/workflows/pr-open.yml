@@ -8,20 +8,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  completion:
+  pr-greeting:
     name: PR Greeting
-    if: github.event.pull_request.opened == 'true'
     env:
       DOMAIN: apps.silver.devops.gov.bc.ca
       NAME: nr-quickstart-helpers
     runs-on: ubuntu-22.04
     steps:
-      - name: Write PR Greeting
-        uses: DerekRoberts/action-pr-description-add@0.0.1
-        env:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: PR Greeting
+        # Run if PR opened or reopened
+        if: contains(github.event.action, 'opened')
+        uses: DerekRoberts/action-pr-description-add@v0.0.1
         with:
-          add_markdow: |
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          add_markdown: |
             ---
             Thanks for the PR!
 
@@ -92,3 +92,14 @@ jobs:
       penetration_test: false
       template_file: ${{ matrix.template_file }}
       template_vars: ${{ matrix.template_vars }}
+
+  # # Uncomment to view GitHub context object
+  # # https://docs.github.com/en/actions/learn-github-actions/contexts
+  # view-context:
+  #   name: View GitHub Context
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - name: Echo GitHub context
+  #       env:
+  #         GITHUB_CONTEXT: ${{ toJSON(github) }}
+  #       run: echo "$GITHUB_CONTEXT"
