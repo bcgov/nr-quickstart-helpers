@@ -33,7 +33,29 @@ jobs:
             Once merged, code will be promoted and handed off to following workflow run.
             [Main Merge Workflow](https://github.com/${{ github.repository }}/actions/workflows/merge-main.yml)
 
+  builds-retag:
+    # These build triggers won't match/fire, so images will be retagged
+    name: Builds
+    uses: ./.github/workflows/_build.yml
+    strategy:
+      matrix:
+        component: [backend, frontend]
+        include:
+          - component: backend
+            triggers: ('backend/')
+          - component: frontend
+            triggers: ('frontend/')
+    secrets:
+      gh_token: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      component: ${{ matrix.component }}
+      img_build: ${{ github.event.number }}
+      img_fallback: test
+      repository: bcgov/nr-quickstart-typescript
+      triggers: ${{ matrix.triggers }}
+
   builds:
+    # These builds don't have triggers and will fire every time
     name: Builds
     uses: ./.github/workflows/_build.yml
     strategy:
@@ -62,6 +84,7 @@ jobs:
     name: Deploys
     needs:
       - builds
+      - builds-retag
       - tests
     # If any of the prerequs created a build, then deploy
     if: contains(needs.*.outputs.build, 'true')
