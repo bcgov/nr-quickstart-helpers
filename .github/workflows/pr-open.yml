@@ -35,7 +35,7 @@ jobs:
 
   builds-retag:
     # These build triggers won't match/fire, so images will be retagged
-    name: Builds
+    name: Retags
     uses: ./.github/workflows/_build.yml
     strategy:
       matrix:
