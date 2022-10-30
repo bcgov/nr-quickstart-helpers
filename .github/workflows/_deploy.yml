@@ -39,7 +39,7 @@ on:
       template_file:
         type: string
         required: true
-        description: Template file (e.g. .github/openshift/deploy.frontend.yml)
+        description: Template file (e.g. frontend/openshift.deploy.yml)
       template_vars:
         type: string
         required: true
