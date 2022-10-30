@@ -22,7 +22,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           add_markdown: |
-            ---
+            <p>---
+
             Thanks for the PR!
 
             Any successful deployments (not always required) will be available below.
