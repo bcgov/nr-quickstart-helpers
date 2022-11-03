@@ -12,10 +12,27 @@ on:
         default: ${{ github.repository }}
         required: false
         description: Optionally, specify a different repo to clone
+      sonar_organization:
+        type: string
+        default: bcgov-sonarcloud
+        required: false
+        description: SonarCloud organization, usually bcgov-sonarcloud
+      sonar_projectKey:
+        type: string
+        default: false
+        required: false
+        description: Run SonarCloud? [true|false]
       test_cmd:
         type: string
         required: true
         description: Command to run unit tests
+    secrets:
+      github_token:
+        required: false
+        description: GitHub token, required for SonarCloud
+      sonar_token:
+        required: false
+        description: Sonar token, project must be using monorepo mode
 
 jobs:
   test:
@@ -52,3 +69,16 @@ jobs:
           cd ${{ inputs.component }}
           npm ci
           ${{ inputs.test_cmd }}
+
+      - name: SonarCloud Scan
+        if: inputs.sonar_token
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+          SONAR_TOKEN: ${{ secrets.sonar_token }}
+        with:
+          projectBaseDir: ${{ inputs.component }}
+          args: >
+            -Dsonar.organization=${{ inputs.projectKey }}
+            -Dsonar.projectKey=${{ inputs.projectKey }}
