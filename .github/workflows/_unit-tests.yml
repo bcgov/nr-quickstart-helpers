@@ -41,6 +41,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          # Disable shallow clone for SonarCloud analysis
+          fetch-depth: 0
           repository: ${{ inputs.repository }}
 
       - name: Get npm cache directory
