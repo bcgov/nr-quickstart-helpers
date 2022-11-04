@@ -80,5 +80,5 @@ jobs:
         with:
           projectBaseDir: ${{ inputs.component }}
           args: >
-            -Dsonar.organization=${{ inputs.projectKey }}
-            -Dsonar.projectKey=${{ inputs.projectKey }}
+            -Dsonar.organization=${{ inputs.sonar_organization }}
+            -Dsonar.projectKey=${{ inputs.sonar_projectKey }}
