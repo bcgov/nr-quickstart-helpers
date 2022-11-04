@@ -73,8 +73,15 @@ jobs:
           cd ${{ inputs.dir }}
           ${{ inputs.test_cmd }}
 
+      - name: Check for Sonar secrets
+        id: check
+        run: |
+          # Trigger SonarCloud if secrets.sonar_token is provided
+          [ -z "${{ secrets.sonar_token }}" ] || \
+            echo "sonarcloud=true" >> $GITHUB_OUTPUT
+
       - name: SonarCloud Scan
-        if: inputs.sonar_projectKey
+        if: steps.check.outputs.sonarcloud == 'true'
         uses: SonarSource/sonarcloud-github-action@master
         env:
           # Needed to get PR information, if any
