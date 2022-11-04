@@ -27,7 +27,7 @@ on:
         required: true
         description: Command to run unit tests
     secrets:
-      github_token:
+      gh_token:
         required: false
         description: GitHub token, required for SonarCloud
       sonar_token:
@@ -75,7 +75,7 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@master
         env:
           # Needed to get PR information, if any
-          GITHUB_TOKEN: ${{ secrets.github_token }}
+          GITHUB_TOKEN: ${{ secrets.gh_token }}
           SONAR_TOKEN: ${{ secrets.sonar_token }}
         with:
           projectBaseDir: ${{ inputs.component }}
