@@ -71,7 +71,7 @@ jobs:
           ${{ inputs.test_cmd }}
 
       - name: SonarCloud Scan
-        if: inputs.sonar_token
+        if: inputs.sonar_projectKey
         uses: SonarSource/sonarcloud-github-action@master
         env:
           # Needed to get PR information, if any
