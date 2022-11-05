@@ -90,7 +90,7 @@ jobs:
           fi
 
           # Follow any active rollouts (see deploymentconfigs)
-          oc rollout status dc/${DC} -w
+          [ -z "${DC}" ]|| oc rollout status dc/${DC} -w
 
       - name: Find Routes
         id: get-route
