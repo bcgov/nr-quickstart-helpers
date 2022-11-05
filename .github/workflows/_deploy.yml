@@ -113,23 +113,17 @@ jobs:
         if: steps.get-route.outputs.route &&( inputs.penetration_test != 'true' )
         run: |
           # Curl URL and verify http code 200
-
-          # Vars
           URL="${{ steps.get-route.outputs.route }}"
-          RETRIES=2
-
-          # Info
           echo -e "\n${URL}\n"
 
-          # Curl and verify
-          while [ ${RETRIES} -gt 0 ]; do
+          # Curl and verify, max 3 attempts
+          for (( i=0; i<3; i++); do
             HTTP_CODE=$(curl -ILso /dev/null -w "%{http_code}" "${URL}")
             if [ "${HTTP_CODE}" -eq 200 ]; then
               echo -e "Deployment successful!"
               exit
             fi
-            echo -e "\nHTTP_CODE:${HTTP_CODE}, RETRIES:${RETRIES}"
-            RETRIES=$((RETRIES-1))
+            echo -e "\nHTTP_CODE:${HTTP_CODE}, Try: #${i}"
             sleep 10
           done
           echo -e "\nDeployment verification failed"

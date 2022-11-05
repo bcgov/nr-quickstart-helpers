@@ -16,7 +16,7 @@ on:
       sonar_args:
         # https://docs.sonarcloud.io/advanced-setup/analysis-parameters/
         description: SonarCloud command line arguments
-        default: >
+        default: |
           -Dsonar.organization=bcgov-sonarcloud
           -Dsonar.projectKey=bcgov_${{ github.repository }}
         required: false
