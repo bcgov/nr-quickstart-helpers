@@ -87,9 +87,12 @@ jobs:
     with:
       dir: ${{ matrix.dir }}
       repository: bcgov/nr-quickstart-typescript
-      sonar_args: >
+      sonar_args: |
         -Dsonar.organization=bcgov-sonarcloud
         -Dsonar.projectKey=${{ matrix.sonar_projectKey }}
+      test_cmd: |
+        npm ci
+        npm run test:cov
 
   deploys:
     name: Deploys

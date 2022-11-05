@@ -97,7 +97,7 @@ jobs:
           target: ${{ inputs.img_fallback }}
           tags: ${{ inputs.img_build }}
 
-      # If a build is required, then create a new image
+      # If a build is required, then build and push!
       - uses: actions/checkout@v3
         with:
           # Check out build repo
