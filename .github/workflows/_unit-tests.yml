@@ -1,29 +1,50 @@
-name: Code Coverage
+name: Unit Tests and Analysis
 
 on:
   workflow_call:
     inputs:
-      component:
+      dir:
+        description: Directory
+        default: .
+        required: false
         type: string
-        required: true
-        description: Component (backend, frontend), also used as path
       repository:
-        type: string
+        description: Non-default repository to clone
         default: ${{ github.repository }}
         required: false
-        description: Optionally, specify a different repo to clone
-      test_cmd:
         type: string
-        required: true
+      sonar_args:
+        # https://docs.sonarcloud.io/advanced-setup/analysis-parameters/
+        description: SonarCloud command line arguments
+        default: >
+          -Dsonar.organization=bcgov-sonarcloud
+          -Dsonar.projectKey=bcgov_${{ github.repository }}
+        required: false
+        type: string
+      test_cmd:
         description: Command to run unit tests
+        default: |
+          npm ci
+          npm run test:cov
+        type: string
+        required: false
+    secrets:
+      gh_token:
+        description: GitHub token, required for SonarCloud
+        required: false
+      sonar_token:
+        description: Sonar token, project must be using monorepo mode
+        required: false
 
 jobs:
   test:
-    name: ${{ inputs.component }}
+    name: ${{ inputs.dir }}
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
+          # Disable shallow clone for SonarCloud analysis
+          fetch-depth: 0
           repository: ${{ inputs.repository }}
 
       - name: Get npm cache directory
@@ -42,13 +63,30 @@ jobs:
       - name: Cache coverage for static analysis
         uses: actions/cache@v3
         with:
-          path: ${{ inputs.component }}/coverage
-          key: coverage-${{ inputs.component }}-${{ github.run_number }}
+          path: ${{ inputs.dir }}/coverage
+          key: coverage-${{ inputs.dir }}-${{ github.run_number }}
           restore-keys: |
-            coverage-${{ inputs.component }}-
+            coverage-${{ inputs.dir }}-
 
       - name: Tests
         run: |
-          cd ${{ inputs.component }}
-          npm ci
+          cd ${{ inputs.dir }}
           ${{ inputs.test_cmd }}
+
+      - name: Check for Sonar secrets
+        id: check
+        run: |
+          # Trigger SonarCloud if secrets.sonar_token is provided
+          [ -z "${{ secrets.sonar_token }}" ] || \
+            echo "sonarcloud=true" >> $GITHUB_OUTPUT
+
+      - name: SonarCloud Scan
+        if: steps.check.outputs.sonarcloud == 'true'
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.gh_token }}
+          SONAR_TOKEN: ${{ secrets.sonar_token }}
+        with:
+          projectBaseDir: ${{ inputs.dir }}
+          args: ${{ inputs.sonar_args }}

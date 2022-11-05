@@ -76,11 +76,20 @@ jobs:
     uses: ./.github/workflows/_unit-tests.yml
     strategy:
       matrix:
-        component: [backend, frontend]
+        dir: [backend, frontend]
+        include:
+          - dir: backend
+            sonar_projectKey: bcgov_nr-quickstart-helpers
+          - dir: frontend
+            sonar_projectKey: bcgov_nr-quickstart-helpers
+    secrets:
+      sonar_token: ${{ secrets.SONAR_TOKEN }}
     with:
-      component: ${{ matrix.component }}
+      dir: ${{ matrix.dir }}
       repository: bcgov/nr-quickstart-typescript
-      test_cmd: npm run test
+      sonar_args: >
+        -Dsonar.organization=bcgov-sonarcloud
+        -Dsonar.projectKey=${{ matrix.sonar_projectKey }}
 
   deploys:
     name: Deploys
