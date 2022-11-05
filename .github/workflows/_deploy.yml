@@ -117,7 +117,7 @@ jobs:
           echo -e "\n${URL}\n"
 
           # Curl and verify, max 3 attempts
-          for (( i=0; i<3; i++); do
+          for (( i=0; i<3; i++ )); do
             HTTP_CODE=$(curl -ILso /dev/null -w "%{http_code}" "${URL}")
             if [ "${HTTP_CODE}" -eq 200 ]; then
               echo -e "Deployment successful!"
