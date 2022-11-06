@@ -8,137 +8,148 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  pr-greeting:
-    name: PR Greeting
-    env:
-      DOMAIN: apps.silver.devops.gov.bc.ca
-      NAME: nr-quickstart-helpers
+  secret-search:
+    name: Secret Search
     runs-on: ubuntu-22.04
     steps:
-      - uses: DerekRoberts/action-pr-description-add@v0.0.2
+      - uses: actions/checkout@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          add_markdown: |
-            ---
+          repository: bcgov/nr-quickstart-typescript
 
-            Thanks for the PR!
+      - name: secret-search
+        uses: Hacks4Snacks/secret-search@v1.1
 
-            Any successful deployments (not always required) will be available below.
-            [Backend](https://${{ env.NAME }}-${{ github.event.number }}-backend.${{ env.DOMAIN }}/) available
-            [Frontend](https://${{ env.NAME }}-${{ github.event.number }}-frontend.${{ env.DOMAIN }}/) available
-
-            Once merged, code will be promoted and handed off to following workflow run.
-            [Main Merge Workflow](https://github.com/${{ github.repository }}/actions/workflows/merge-main.yml)
-
-  builds-retag:
-    # These build triggers won't match/fire, so images will be retagged
-    name: Retags
-    uses: ./.github/workflows/_build.yml
-    strategy:
-      matrix:
-        component: [backend, frontend]
-        include:
-          - component: backend
-            triggers: ('backend/')
-          - component: frontend
-            triggers: ('frontend/')
-    secrets:
-      gh_token: ${{ secrets.GITHUB_TOKEN }}
-    with:
-      component: ${{ matrix.component }}
-      img_build: ${{ github.event.number }}
-      img_fallback: test
-      repository: bcgov/nr-quickstart-typescript
-      triggers: ${{ matrix.triggers }}
-
-  builds:
-    # These builds don't have triggers and will fire every time
-    name: Builds
-    needs:
-      - builds-retag
-    uses: ./.github/workflows/_build.yml
-    strategy:
-      matrix:
-        component: [backend, frontend]
-    secrets:
-      gh_token: ${{ secrets.GITHUB_TOKEN }}
-    with:
-      component: ${{ matrix.component }}
-      img_build: ${{ github.event.number }}
-      img_fallback: test
-      repository: bcgov/nr-quickstart-typescript
-
-  tests:
-    name: Unit Tests
-    uses: ./.github/workflows/_unit-tests.yml
-    strategy:
-      matrix:
-        dir: [backend, frontend]
-        include:
-          - dir: backend
-            sonar_projectKey: bcgov_nr-quickstart-helpers
-          - dir: frontend
-            sonar_projectKey: bcgov_nr-quickstart-helpers
-    secrets:
-      sonar_token: ${{ secrets.SONAR_TOKEN }}
-    with:
-      dir: ${{ matrix.dir }}
-      repository: bcgov/nr-quickstart-typescript
-      sonar_args: |
-        -Dsonar.organization=bcgov-sonarcloud
-        -Dsonar.projectKey=${{ matrix.sonar_projectKey }}
-      test_cmd: |
-        npm ci
-        npm run test:cov
-
-  deploys:
-    name: Deploys
-    needs:
-      - builds
-    # If any of the prerequs created a build, then deploy
-    if: contains(needs.*.outputs.build, 'true')
-    uses: ./.github/workflows/_deploy.yml
-    strategy:
-      matrix:
-        component: [backend, database, frontend]
-        include:
-          - component: database
-            overwrite: false
-            template_file: database/openshift.deploy.yml
-            template_vars: -p ZONE=${{ github.event.number }} -p NAME=${{ github.event.repository.name }}
-          - component: backend
-            overwrite: true
-            template_file: backend/openshift.deploy.yml
-            template_vars:
-              -p ZONE=${{ github.event.number }} -p MIN_REPLICAS=1 -p MAX_REPLICAS=2
-              -p PROMOTE=${{ github.repository }}/backend:${{ github.event.number }}
-              -p NAME=${{ github.event.repository.name }}
-          - component: frontend
-            overwrite: true
-            template_file: frontend/openshift.deploy.yml
-            template_vars:
-              -p ZONE=${{ github.event.number }} -p MIN_REPLICAS=1 -p MAX_REPLICAS=2
-              -p PROMOTE=${{ github.repository }}/frontend:${{ github.event.number }}
-              -p NAME=${{ github.event.repository.name }}
-    secrets:
-      oc_namespace: ${{ secrets.OC_NAMESPACE }}
-      oc_server: ${{ secrets.OC_SERVER }}
-      oc_token: ${{ secrets.OC_TOKEN }}
-    with:
-      component: ${{ matrix.component }}
-      overwrite: ${{ matrix.overwrite }}
-      repository: bcgov/nr-quickstart-typescript
-      penetration_test: false
-      template_file: ${{ matrix.template_file }}
-      template_vars: ${{ matrix.template_vars }}
-
-  # # Uncomment to view GitHub context object
-  # # https://docs.github.com/en/actions/learn-github-actions/contexts
-  # view-context:
-  #   name: View GitHub Context
+  # pr-greeting:
+  #   name: PR Greeting
+  #   env:
+  #     DOMAIN: apps.silver.devops.gov.bc.ca
+  #     NAME: nr-quickstart-helpers
   #   runs-on: ubuntu-22.04
   #   steps:
-  #     - name: Echo GitHub context
-  #       env:
-  #         GITHUB_CONTEXT: ${{ toJSON(github) }}
-  #       run: echo "$GITHUB_CONTEXT"
+  #     - uses: DerekRoberts/action-pr-description-add@v0.0.2
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         add_markdown: |
+  #           ---
+
+  #           Thanks for the PR!
+
+  #           Any successful deployments (not always required) will be available below.
+  #           [Backend](https://${{ env.NAME }}-${{ github.event.number }}-backend.${{ env.DOMAIN }}/) available
+  #           [Frontend](https://${{ env.NAME }}-${{ github.event.number }}-frontend.${{ env.DOMAIN }}/) available
+
+  #           Once merged, code will be promoted and handed off to following workflow run.
+  #           [Main Merge Workflow](https://github.com/${{ github.repository }}/actions/workflows/merge-main.yml)
+
+  # builds-retag:
+  #   # These build triggers won't match/fire, so images will be retagged
+  #   name: Retags
+  #   uses: ./.github/workflows/_build.yml
+  #   strategy:
+  #     matrix:
+  #       component: [backend, frontend]
+  #       include:
+  #         - component: backend
+  #           triggers: ('backend/')
+  #         - component: frontend
+  #           triggers: ('frontend/')
+  #   secrets:
+  #     gh_token: ${{ secrets.GITHUB_TOKEN }}
+  #   with:
+  #     component: ${{ matrix.component }}
+  #     img_build: ${{ github.event.number }}
+  #     img_fallback: test
+  #     repository: bcgov/nr-quickstart-typescript
+  #     triggers: ${{ matrix.triggers }}
+
+  # builds:
+  #   # These builds don't have triggers and will fire every time
+  #   name: Builds
+  #   needs:
+  #     - builds-retag
+  #   uses: ./.github/workflows/_build.yml
+  #   strategy:
+  #     matrix:
+  #       component: [backend, frontend]
+  #   secrets:
+  #     gh_token: ${{ secrets.GITHUB_TOKEN }}
+  #   with:
+  #     component: ${{ matrix.component }}
+  #     img_build: ${{ github.event.number }}
+  #     img_fallback: test
+  #     repository: bcgov/nr-quickstart-typescript
+
+  # tests:
+  #   name: Unit Tests
+  #   uses: ./.github/workflows/_unit-tests.yml
+  #   strategy:
+  #     matrix:
+  #       dir: [backend, frontend]
+  #       include:
+  #         - dir: backend
+  #           sonar_projectKey: bcgov_nr-quickstart-helpers
+  #         - dir: frontend
+  #           sonar_projectKey: bcgov_nr-quickstart-helpers
+  #   secrets:
+  #     sonar_token: ${{ secrets.SONAR_TOKEN }}
+  #   with:
+  #     dir: ${{ matrix.dir }}
+  #     repository: bcgov/nr-quickstart-typescript
+  #     sonar_args: |
+  #       -Dsonar.organization=bcgov-sonarcloud
+  #       -Dsonar.projectKey=${{ matrix.sonar_projectKey }}
+  #     test_cmd: |
+  #       npm ci
+  #       npm run test:cov
+
+  # deploys:
+  #   name: Deploys
+  #   needs:
+  #     - builds
+  #   # If any of the prerequs created a build, then deploy
+  #   if: contains(needs.*.outputs.build, 'true')
+  #   uses: ./.github/workflows/_deploy.yml
+  #   strategy:
+  #     matrix:
+  #       component: [backend, database, frontend]
+  #       include:
+  #         - component: database
+  #           overwrite: false
+  #           template_file: database/openshift.deploy.yml
+  #           template_vars: -p ZONE=${{ github.event.number }} -p NAME=${{ github.event.repository.name }}
+  #         - component: backend
+  #           overwrite: true
+  #           template_file: backend/openshift.deploy.yml
+  #           template_vars:
+  #             -p ZONE=${{ github.event.number }} -p MIN_REPLICAS=1 -p MAX_REPLICAS=2
+  #             -p PROMOTE=${{ github.repository }}/backend:${{ github.event.number }}
+  #             -p NAME=${{ github.event.repository.name }}
+  #         - component: frontend
+  #           overwrite: true
+  #           template_file: frontend/openshift.deploy.yml
+  #           template_vars:
+  #             -p ZONE=${{ github.event.number }} -p MIN_REPLICAS=1 -p MAX_REPLICAS=2
+  #             -p PROMOTE=${{ github.repository }}/frontend:${{ github.event.number }}
+  #             -p NAME=${{ github.event.repository.name }}
+  #   secrets:
+  #     oc_namespace: ${{ secrets.OC_NAMESPACE }}
+  #     oc_server: ${{ secrets.OC_SERVER }}
+  #     oc_token: ${{ secrets.OC_TOKEN }}
+  #   with:
+  #     component: ${{ matrix.component }}
+  #     overwrite: ${{ matrix.overwrite }}
+  #     repository: bcgov/nr-quickstart-typescript
+  #     penetration_test: false
+  #     template_file: ${{ matrix.template_file }}
+  #     template_vars: ${{ matrix.template_vars }}
+
+  # # # Uncomment to view GitHub context object
+  # # # https://docs.github.com/en/actions/learn-github-actions/contexts
+  # # view-context:
+  # #   name: View GitHub Context
+  # #   runs-on: ubuntu-22.04
+  # #   steps:
+  # #     - name: Echo GitHub context
+  # #       env:
+  # #         GITHUB_CONTEXT: ${{ toJSON(github) }}
+  # #       run: echo "$GITHUB_CONTEXT"
