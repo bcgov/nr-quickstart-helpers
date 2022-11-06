@@ -19,12 +19,17 @@ on:
         type: string
         required: false
         default: ${{ github.repository }}
-        description: Optional, specify a repo to clone and build from
+        description: Non-default repo to clone
+      secret_search:
+        type: string
+        required: false
+        default: true
+        description: Run a secret scanner, can stop the pipeline
       triggers:
         type: string
         required: false
         default: "('.')"
-        description: Optional, specify paths to conditionally trigger a build, e.g. ('./backend/', './frontend/)
+        description: Paths used to trigger a build, e.g. ('./backend/', './frontend/)
     secrets:
       gh_token:
         required: true
@@ -38,6 +43,18 @@ env:
   default_branch: ${{ github.event.repository.default_branch }}
 
 jobs:
+  secret-search:
+    name: Secret Search
+    if: contains(inputs.secret_search, 'true')
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository }}
+
+      - name: secret-search
+        uses: Hacks4Snacks/secret-search@v1.1
+
   build:
     name: ${{ inputs.component }}
     runs-on: ubuntu-22.04
@@ -55,7 +72,7 @@ jobs:
         id: check
         run: |
           # Fetch default branch to diff against
-          git fetch origin ${{ env.default_branch }}:refs/remotes/origin/master
+          git fetch origin ${{ env.default_branch }}:refs/remotes/origin/main
 
           # Trigger build if diff matches any triggers
           TRIGGERS=${{ inputs.triggers }}
