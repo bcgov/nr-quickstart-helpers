@@ -30,6 +30,11 @@ on:
         required: false
         default: "('.')"
         description: Paths used to trigger a build, e.g. ('./backend/', './frontend/)
+      upstream_branch:
+        type: string
+        required: false
+        default: ${{ github.event.repository.default_branch }}
+        description: Branch to diff against
     secrets:
       gh_token:
         required: true
@@ -38,9 +43,6 @@ on:
       build:
         description: True = build has changed
         value: ${{ jobs.build.outputs.build }}
-
-env:
-  default_branch: ${{ github.event.repository.default_branch }}
 
 jobs:
   secret-search:
@@ -66,13 +68,13 @@ jobs:
           # Check out source repo
           repository: ${{ github.repository }}
 
-      # Check triggers to see if a build is required
-      # Returns jobs.check.outputs.build as a boolean (true/false)
+      # Check triggers to see if a build is required; always build if inputs.img_fallback not provided or doesn't exist
       - name: Check and process modified files
+        # Returns jobs.check.outputs.build as a boolean (true/false)
         id: check
         run: |
           # Fetch default branch to diff against
-          git fetch origin ${{ env.default_branch }}:refs/remotes/origin/main
+          git fetch origin ${{ inputs.upstream_branch }}
 
           # Trigger build if diff matches any triggers
           TRIGGERS=${{ inputs.triggers }}
@@ -87,7 +89,7 @@ jobs:
                   exit 0
               fi
             done
-          done < <(git diff origin/${{ env.default_branch }} --name-only)
+          done < <(git diff origin/${{ inputs.upstream_branch }} --name-only)
 
           # Check that fallback tag exists, otherwise build
           TOKEN=$(curl -s https://ghcr.io/token\?scope\="repository:${{ github.repository }}/${{ inputs.component }}:pull" | jq -r .token)
