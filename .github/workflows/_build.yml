@@ -58,7 +58,7 @@ jobs:
         uses: Hacks4Snacks/secret-search@v1.1
 
   build:
-    name: ${{ inputs.component }}
+    name: Build
     runs-on: ubuntu-22.04
     outputs:
       build: ${{ steps.check.outputs.build }}
