@@ -88,7 +88,6 @@ jobs:
           - component: database
             overwrite: false
             template_file: database/openshift.deploy.yml
-            template_vars: ""
           - component: frontend
             overwrite: true
             template_file: frontend/openshift.deploy.yml
@@ -96,7 +95,6 @@ jobs:
           - component: init
             overwrite: false
             template_file: common/openshift.init.yml
-            template_vars: ""
     secrets:
       oc_namespace: ${{ secrets.OC_NAMESPACE }}
       oc_server: ${{ secrets.OC_SERVER }}
