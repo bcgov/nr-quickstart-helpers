@@ -42,7 +42,8 @@ on:
         description: Template file (e.g. frontend/openshift.deploy.yml)
       template_vars:
         type: string
-        required: true
+        required: false
+        default: ""
         description: Template variables to pass (e.g. -p ZONE=...)
     secrets:
       oc_namespace:
