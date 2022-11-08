@@ -103,6 +103,14 @@ jobs:
           restore-keys: |
             coverage-${{ inputs.dir }}-
 
+      - name: Check cache
+        run: |
+          ls -la
+          cd ${{ inputs.dir }}
+          pwd
+          whoami
+          ls -la
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:

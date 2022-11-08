@@ -32,7 +32,9 @@ jobs:
       dir: ${{ matrix.dir }}
       repository: bcgov/nr-quickstart-typescript
       sonar_args: |
-        -Dsonar.exclusions=**/test/**,.github/**,**/migrations/**,**/coverage/**
+        -Dsonar.cobertura.reportPaths=coverage/cobertura-coverage.xml
+        -Dsonar.exclusions=**/test/**,.github/**,**/migrations/**
+        -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
         -Dsonar.organization=bcgov-sonarcloud
         -Dsonar.project.monorepo.enabled=true
         -Dsonar.projectKey=${{ matrix.sonar_projectKey }}
