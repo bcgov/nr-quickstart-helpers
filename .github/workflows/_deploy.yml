@@ -115,7 +115,7 @@ jobs:
         run: |
           # Curl URL and verify http code 200
           URL="${{ steps.get-route.outputs.route }}"
-          echo -e "\n${URL}\n"
+          echo -e "\n${URL}"
 
           # Curl and verify, max 3 attempts
           for (( i=0; i<3; i++ )); do
@@ -124,7 +124,7 @@ jobs:
               echo -e "Deployment successful!"
               exit
             fi
-            echo -e "\nHTTP_CODE:${HTTP_CODE}, Try: #${i}"
+            echo -e "HTTP_CODE:${HTTP_CODE}, Try: #${i}"
             sleep 10
           done
           echo -e "\nDeployment verification failed"

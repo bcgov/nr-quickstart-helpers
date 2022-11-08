@@ -30,6 +30,18 @@ jobs:
             Once merged, code will be promoted and handed off to following workflow run.
             [Main Merge Workflow](https://github.com/${{ github.repository }}/actions/workflows/merge-main.yml)
 
+  secret-search:
+    name: Secret Search
+    if: contains(inputs.secret_search, 'true')
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository }}
+
+      - name: secret-search
+        uses: Hacks4Snacks/secret-search@v1.1
+
   builds-retag:
     # These build triggers won't match/fire, so images will be retagged
     name: Retags
