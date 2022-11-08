@@ -32,13 +32,9 @@ jobs:
 
   secret-search:
     name: Secret Search
-    if: contains(inputs.secret_search, 'true')
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-        with:
-          repository: ${{ github.repository }}
-
       - name: secret-search
         uses: Hacks4Snacks/secret-search@v1.1
 
