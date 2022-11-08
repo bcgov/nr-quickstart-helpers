@@ -30,34 +30,17 @@ jobs:
             Once merged, code will be promoted and handed off to following workflow run.
             [Main Merge Workflow](https://github.com/${{ github.repository }}/actions/workflows/merge-main.yml)
 
-  builds-retag:
-    # These build triggers won't match/fire, so images will be retagged
-    name: Retags
-    uses: ./.github/workflows/_build.yml
-    strategy:
-      matrix:
-        component: [backend, database, frontend]
-        include:
-          - component: backend
-            triggers: ('backend/')
-          - component: database
-            triggers: ('database/')
-          - component: frontend
-            triggers: ('frontend/')
-    secrets:
-      gh_token: ${{ secrets.GITHUB_TOKEN }}
-    with:
-      component: ${{ matrix.component }}
-      img_build: ${{ github.event.number }}
-      img_fallback: test
-      repository: bcgov/nr-quickstart-typescript
-      triggers: ${{ matrix.triggers }}
+  secret-search:
+    name: Secret Search
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: secret-search
+        uses: Hacks4Snacks/secret-search@v1.1
 
   builds:
     # These builds don't have triggers and will fire every time
     name: Builds
-    needs:
-      - builds-retag
     uses: ./.github/workflows/_build.yml
     strategy:
       matrix:
