@@ -37,9 +37,11 @@ on:
         required: false
 
 jobs:
-  test:
+  tests:
     name: Tests
     runs-on: ubuntu-22.04
+    outputs:
+      run_sonarcloud: ${{ steps.sonar-check.outputs.run }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -74,11 +76,22 @@ jobs:
           cd ${{ inputs.dir }}
           ${{ inputs.test_cmd }}
 
+      - name: Check for SonarCloud trigger
+        id: sonar-check
+        run: |
+          # Trigger SonarCloud if secrets.sonar_token is provided
+          if [ -z "${{ secrets.sonar_token }}" ]; then
+            echo "secrets.sonar_token not detected"
+          else
+            echo "secrets.sonar_token detected!"
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
+
   sonarcloud:
     name: SonarCloud
-    if: secrets.sonar_token
+    if: needs.tests.outputs.run_sonarcloud
     needs:
-      - test
+      - tests
     runs-on: ubuntu-22.04
     steps:
       - name: Restore coverage for analysis
