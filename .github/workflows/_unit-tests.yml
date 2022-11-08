@@ -37,9 +37,11 @@ on:
         required: false
 
 jobs:
-  test:
-    name: Test
+  tests:
+    name: Tests
     runs-on: ubuntu-22.04
+    outputs:
+      run_sonarcloud: ${{ steps.sonar-check.outputs.run }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -60,7 +62,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Cache coverage for static analysis
+      - name: Cache coverage for sonarcloud
+        id: coverage-cache
         uses: actions/cache@v3
         with:
           path: ${{ inputs.dir }}/coverage
@@ -68,20 +71,39 @@ jobs:
           restore-keys: |
             coverage-${{ inputs.dir }}-
 
-      - name: Tests
+      - name: Run Tests
         run: |
           cd ${{ inputs.dir }}
           ${{ inputs.test_cmd }}
 
-      - name: Check for Sonar secrets
-        id: check
+      - name: Check for SonarCloud trigger
+        id: sonar-check
         run: |
           # Trigger SonarCloud if secrets.sonar_token is provided
-          [ -z "${{ secrets.sonar_token }}" ] || \
-            echo "sonarcloud=true" >> $GITHUB_OUTPUT
+          if [ -z "${{ secrets.sonar_token }}" ]; then
+            echo "secrets.sonar_token not detected"
+          else
+            echo "secrets.sonar_token detected!"
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
+
+  sonarcloud:
+    name: SonarCloud
+    if: needs.tests.outputs.run_sonarcloud
+    needs:
+      - tests
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Restore coverage for analysis
+        id: coverage-cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.dir }}/coverage
+          key: coverage-${{ inputs.dir }}-${{ github.run_number }}
+          restore-keys: |
+            coverage-${{ inputs.dir }}-
 
       - name: SonarCloud Scan
-        if: steps.check.outputs.sonarcloud == 'true'
         uses: SonarSource/sonarcloud-github-action@master
         env:
           # Needed to get PR information, if any
