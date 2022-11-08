@@ -32,7 +32,7 @@ jobs:
       dir: ${{ matrix.dir }}
       repository: bcgov/nr-quickstart-typescript
       sonar_args: |
-        -Dsonar.exclusions=**/test/**,.github/**,**/migrations/**,**/coverage/**
+        -Dsonar.exclusions=**/coverage/**
         -Dsonar.organization=bcgov-sonarcloud
         -Dsonar.project.monorepo.enabled=true
         -Dsonar.projectKey=${{ matrix.sonar_projectKey }}

@@ -45,8 +45,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          # Disable shallow clone for SonarCloud analysis
-          fetch-depth: 0
           repository: ${{ inputs.repository }}
 
       - name: Get npm cache directory
@@ -94,6 +92,12 @@ jobs:
       - tests
     runs-on: ubuntu-22.04
     steps:
+      - uses: actions/checkout@v3
+        with:
+          # Disable shallow clone for SonarCloud analysis
+          fetch-depth: 0
+          repository: ${{ inputs.repository }}
+
       - name: Restore coverage for analysis
         id: coverage-cache
         uses: actions/cache@v3
