@@ -15,7 +15,7 @@ jobs:
       NAME: nr-quickstart-helpers
     runs-on: ubuntu-22.04
     steps:
-      - uses: DerekRoberts/action-pr-description-add@v0.0.2
+      - uses: bcgov-nr/action-pr-description-add@v0.0.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           add_markdown: |
