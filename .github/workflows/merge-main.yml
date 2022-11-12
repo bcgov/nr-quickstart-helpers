@@ -20,73 +20,73 @@ concurrency:
 jobs:
   deploys-test:
     name: TEST Deployments
-    uses: ./.github/workflows/_deploy.yml
+    environment: test
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        component: [backend, database, frontend, init]
+        name: [backend, database, frontend, init]
         include:
-          - component: backend
+          - name: backend
             overwrite: true
-            template_file: backend/openshift.deploy.yml
-          - component: database
+            file: backend/openshift.deploy.yml
+          - name: database
             overwrite: false
-            template_file: database/openshift.deploy.yml
-          - component: frontend
+            file: database/openshift.deploy.yml
+          - name: frontend
             overwrite: true
-            template_file: frontend/openshift.deploy.yml
-          - component: init
+            file: frontend/openshift.deploy.yml
+          - name: init
             overwrite: false
-            template_file: common/openshift.init.yml
-    secrets:
-      oc_namespace: ${{ secrets.OC_NAMESPACE }}
-      oc_server: ${{ secrets.OC_SERVER }}
-      oc_token: ${{ secrets.OC_TOKEN }}
-    with:
-      component: ${{ matrix.component }}
-      environment: test
-      overwrite: ${{ matrix.overwrite }}
-      penetration_test: true
-      repository: bcgov/nr-quickstart-typescript
-      template_file: ${{ matrix.template_file }}
-      template_vars:
-        -p ZONE=test -p PROMOTE=${{ github.repository }}/${{ matrix.component }}:test
-        -p NAME=${{ github.event.repository.name }} ${{ matrix.template_vars }}
+            file: common/openshift.init.yml
+    steps:
+      - uses: bcgov-nr/action-deployer-openshift@v0.0.1
+        with:
+          file: ${{ matrix.file }}
+          oc_namespace: ${{ secrets.OC_NAMESPACE }}
+          oc_server: ${{ secrets.OC_SERVER }}
+          oc_token: ${{ secrets.OC_TOKEN }}
+          overwrite: ${{ matrix.overwrite }}
+          parameters:
+            -p ZONE=test -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:test
+            -p NAME=${{ github.event.repository.name }} ${{ matrix.parameters }}
+          penetration_test: true
+          repository: bcgov/nr-quickstart-typescript
 
   deploys-prod:
     name: PROD Deployments
     needs:
       - deploys-test
-    uses: ./.github/workflows/_deploy.yml
+    environment: prod
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        component: [backend, database, frontend, init]
+        name: [backend, database, frontend, init]
         include:
-          - component: backend
+          - name: backend
             overwrite: true
-            template_file: backend/openshift.deploy.yml
-          - component: database
+            file: backend/openshift.deploy.yml
+          - name: database
             overwrite: false
-            template_file: database/openshift.deploy.yml
-          - component: frontend
+            file: database/openshift.deploy.yml
+          - name: frontend
             overwrite: true
-            template_file: frontend/openshift.deploy.yml
-          - component: init
+            file: frontend/openshift.deploy.yml
+          - name: init
             overwrite: false
-            template_file: common/openshift.init.yml
-    secrets:
-      oc_namespace: ${{ secrets.OC_NAMESPACE }}
-      oc_server: ${{ secrets.OC_SERVER }}
-      oc_token: ${{ secrets.OC_TOKEN }}
-    with:
-      component: ${{ matrix.component }}
-      environment: prod
-      overwrite: ${{ matrix.overwrite }}
-      penetration_test: true
-      repository: bcgov/nr-quickstart-typescript
-      template_file: ${{ matrix.template_file }}
-      template_vars:
-        -p ZONE=prod -p PROMOTE=${{ github.repository }}/${{ matrix.component }}:test
-        -p NAME=${{ github.event.repository.name }} ${{ matrix.template_vars }}
+            file: common/openshift.init.yml
+    steps:
+      - uses: bcgov-nr/action-deployer-openshift@v0.0.1
+        with:
+          file: ${{ matrix.file }}
+          oc_namespace: ${{ secrets.OC_NAMESPACE }}
+          oc_server: ${{ secrets.OC_SERVER }}
+          oc_token: ${{ secrets.OC_TOKEN }}
+          overwrite: ${{ matrix.overwrite }}
+          parameters:
+            -p ZONE=prod -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:test
+            -p NAME=${{ github.event.repository.name }} ${{ matrix.parameters }}
+          penetration_test: true
+          repository: bcgov/nr-quickstart-typescript
 
   image-promotions:
     name: Promote images to PROD
@@ -95,11 +95,11 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        component: [backend, database, frontend]
+        package: [backend, database, frontend]
     steps:
       - uses: shrink/actions-docker-registry-tag@v3
         with:
           registry: ghcr.io
-          repository: ${{ github.repository }}/${{ matrix.component }}
+          repository: ${{ github.repository }}/${{ matrix.package }}
           target: test
           tags: prod

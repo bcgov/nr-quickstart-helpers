@@ -30,7 +30,7 @@ jobs:
             [Frontend](https://${{ env.NAME }}-${{ github.event.number }}-frontend.${{ env.DOMAIN }}/) available
 
             Once merged, code will be promoted and handed off to following workflow run.
-            [Main Merge Workflow](https://github.com/${{ github.repository }}/actions/workflows/merge-main.yml)
+            [Main Merge Workflow](https://github.com/${{ github.repository }}/actions/workflows/merge-main.bcgov-nr/action-deployer-openshift@v0.0.1)
 
   secret-search:
     name: Secret Search
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        file: [backend, database, frontend, init]
+        name: [backend, database, frontend, init]
         include:
           - name: backend
             file: backend/openshift.deploy.yml
@@ -112,7 +112,7 @@ jobs:
             overwrite: false
             file: common/openshift.init.yml
     steps:
-      - uses: bcgov-nr/action-deployer-openshift.yml@v0.0.1
+      - uses: bcgov-nr/action-deployer-openshift@v0.0.1
         with:
           file: ${{ matrix.file }}
           oc_namespace: ${{ secrets.OC_NAMESPACE }}
