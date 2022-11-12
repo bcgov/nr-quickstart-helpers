@@ -85,7 +85,7 @@ jobs:
       repository: bcgov/nr-quickstart-typescript
       template_file: ${{ matrix.template_file }}
       template_vars:
-        -p ZONE=prod -p PROMOTE=${{ github.repository }}/${{ matrix.component }}:prod
+        -p ZONE=prod -p PROMOTE=${{ github.repository }}/${{ matrix.component }}:test
         -p NAME=${{ github.event.repository.name }} ${{ matrix.template_vars }}
 
   image-promotions:
