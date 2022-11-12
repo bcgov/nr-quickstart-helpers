@@ -14,6 +14,8 @@ jobs:
       DOMAIN: apps.silver.devops.gov.bc.ca
       NAME: nr-quickstart-helpers
     runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: write
     steps:
       - uses: bcgov-nr/action-pr-description-add@v0.0.2
         with:
