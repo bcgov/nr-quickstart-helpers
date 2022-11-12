@@ -44,6 +44,8 @@ jobs:
     # These builds don't have triggers and will fire every time
     name: Retags
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     strategy:
       matrix:
         package: [backend, database, frontend]
@@ -71,6 +73,8 @@ jobs:
     needs:
       - retags
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     strategy:
       matrix:
         package: [backend, database, frontend]
