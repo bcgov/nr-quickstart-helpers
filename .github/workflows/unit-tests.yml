@@ -40,6 +40,5 @@ jobs:
             -Dsonar.exclusions=**/coverage/**,**/node_modules/**
             -Dsonar.organization=bcgov-sonarcloud
             -Dsonar.projectKey=bcgov_nr-quickstart-helpers
-            -Dsonar.project.monorepo.enabled=false
           sonar_comment_token: ${{ secrets.GITHUB_TOKEN }}
           sonar_project_token: ${{ secrets[matrix.token] }}
