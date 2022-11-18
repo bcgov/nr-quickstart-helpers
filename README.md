@@ -8,6 +8,13 @@
 [![Lifecycle](https://img.shields.io/badge/Lifecycle-Experimental-339999)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
 
 # DevOps-QuickStart-Helpers
-Helper functions and potential future Actions supporting the DevOps-QuickStart.
 
-Please see [DevOps-QuickStart](https://github.com/bcgov/DevOps-QuickStart-Helpers) to get started with OpenShift.
+This is a testing, issue and support repository for Natural Resources' DevOps QuickStart apps.
+
+Please see [DevOps-QuickStart-TypeScript](https://github.com/bcgov/DevOps-QuickStart-TypeScript) to get started with OpenShift, TypeScript and Postgres/PostGIS.
+
+Actions:
+ - [Builder-GHCR](https://github.com/bcgov-nr/action-builder-ghcr)
+ - [Deployer-OpenShift](https://github.com/bcgov-nr/action-deployer-openshift)
+ - [PR-Descriptions](https://github.com/bcgov-nr/action-pr-description-add)
+ - [Unit-Tests](https://github.com/bcgov-nr/action-test-and-analyse)
