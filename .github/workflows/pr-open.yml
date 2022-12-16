@@ -104,7 +104,7 @@ jobs:
             overwrite: false
             file: common/openshift.init.yml
     steps:
-      - uses: bcgov-nr/action-deployer-openshift@v0.0.2
+      - uses: bcgov-nr/action-deployer-openshift@v0.1.0
         with:
           file: ${{ matrix.file }}
           oc_namespace: ${{ secrets.OC_NAMESPACE }}
