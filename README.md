@@ -9,12 +9,10 @@
 
 # DevOps-QuickStart-Helpers
 
-This is a testing, issue and support repository for Natural Resources' DevOps QuickStart apps.
+This is an achived testing repository for the Natural Resources' QuickStart-based apps.
 
-Please see [DevOps-QuickStart-TypeScript](https://github.com/bcgov/DevOps-QuickStart-TypeScript) to get started with OpenShift, TypeScript and Postgres/PostGIS.
+Starter Template:
+ - [NR-QuickStart-TypeScript](https://github.com/bcgov/NR-QuickStart-TypeScript)
 
 Actions:
- - [Builder-GHCR](https://github.com/bcgov-nr/action-builder-ghcr)
- - [Deployer-OpenShift](https://github.com/bcgov-nr/action-deployer-openshift)
- - [PR-Descriptions](https://github.com/bcgov-nr/action-pr-description-add)
- - [Unit-Tests](https://github.com/bcgov-nr/action-test-and-analyse)
+ - [See bcgov/nr](https://github.com/bcgov-nr/?q=actions-&type=all&language=&sort=)
